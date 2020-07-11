@@ -45,16 +45,8 @@ RUN set -x && \
     apk del build-dependencies && \
     rm -rf /var/cache/apk/* && \
     \
-    echo "==> Adding hosts for convenience..." && \
-    mkdir -p /etc/ansible /ansible/library /ansible/playbooks && \
-    echo -ne '[local]\nlocalhost\n' >> /etc/ansible/hosts
+    echo "==> Setting up playbooks directory..." && \
+    mkdir -p /ansible/playbooks
 
-# https://docs.ansible.com/ansible/latest/reference_appendices/config.html#environment-variables
-ENV ANSIBLE_GATHERING=smart \
-    ANSIBLE_HOST_KEY_CHECKING=False \
-    ANSIBLE_RETRY_FILES_ENABLED=False \
-    ANSIBLE_SSH_PIPELINING=True \
-    ANSIBLE_ROLES_PATH=/ansible/playbooks/roles \
-    ANSIBLE_LIBRARY=/ansible/library
-
+COPY ./etc/ansible /etc/ansible
 WORKDIR /ansible/playbooks
