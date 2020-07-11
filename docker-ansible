@@ -35,5 +35,7 @@ if [[ -n ${ANSIBLE_LOG_PATH} ]]; then
     OPTS+=( -v "${ANSIBLE_LOG_PATH}:/var/log/ansible.log" )
 fi
 
-set -x
+if [[ -n ${DOCKER_ANSIBLE_DEBUG} ]]; then
+    set -x
+fi
 docker run "${OPTS[@]}" "${IMAGE}" "$@"
