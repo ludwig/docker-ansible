@@ -18,3 +18,6 @@ publish:
 publish-latest:
 	docker tag $(IMAGE_TAG) $(IMAGE):latest
 	docker push $(IMAGE):latest
+
+config:
+	./docker-ansible ansible-config dump
