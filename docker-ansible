@@ -1,0 +1,39 @@
+#!/bin/bash
+# Helper script for running ansible from inside docker.
+
+IMAGE=ludwig/docker-ansible:latest
+
+OPTS=(
+    -it --rm
+    -v ~/.ssh/id_rsa:/root/.ssh/id_rsa:ro
+    -v ~/.ssh/id_rsa.pub:/root/.ssh/id_rsa.pub:ro
+)
+
+ANSIBLE_PLAYBOOK_DIR="${ANSIBLE_PLAYBOOK_DIR:-${PWD}}"
+if [[ -d ${ANSIBLE_PLAYBOOK_DIR} ]]; then
+    OPTS+=( -v "${ANSIBLE_PLAYBOOK_DIR}:/ansible/playbooks" )
+else
+    >&2 echo "ERROR: Invalid playbook directory: ${ANSIBLE_PLAYBOOK_DIR}"
+    exit 1
+fi
+
+if [[ -n ${ANSIBLE_VAULT_PASSWORD_FILE} ]]; then
+    if [[ -f ${ANSIBLE_VAULT_PASSWORD_FILE} ]]; then
+        vault_pass="/etc/ansible/vault_password"
+        OPTS+=( -v "${ANSIBLE_VAULT_PASSWORD_FILE}:${vault_pass}:ro" )
+    else
+        >&2 echo -n "ERROR: Invalid vault password file: "
+        >&2 echo "${ANSIBLE_VAULT_PASSWORD_FILE}"
+        exit 1
+    fi
+fi
+
+if [[ -n ${ANSIBLE_LOG_PATH} ]]; then
+    if [[ ! -f ${ANSIBLE_LOG_PATH} ]]; then
+        touch "${ANSIBLE_LOG_PATH}"
+    fi
+    OPTS+=( -v "${ANSIBLE_LOG_PATH}:/var/log/ansible.log" )
+fi
+
+set -x
+docker run "${OPTS[@]}" "${IMAGE}" "$@"
